@@ -31,7 +31,7 @@ Niezrobione dźwignie, od największej szacowanej: spekulacja DSpark (szacunek: 
 attention przy długim kontekście rozłożone na wszystkie 46 SM, pomoc CPU w prefillu masowym, większe strony pamięci dla wag w RAM.
 
 ## STATUS (końcowe A/B, kolejka ink, llama.cpp x3, ink, ink; bench.py 6 x 512, mediany)
-- inkling: c1 51,5 / 55,5 / 54,5 tok/s; prefill 3,3k 849-888, 12,9k 743-784; 18,8k: prefill 676-714, decode 37-40, igły 3/3.
+- zer0.ngin: c1 51,5 / 55,5 / 54,5 tok/s; prefill 3,3k 849-888, 12,9k 743-784; 18,8k: prefill 676-714, decode 37-40, igły 3/3.
 - llama.cpp b12649 (Twój profil, bez mmproj): c1 23,3, prefill 222/220, 18,8k decode 23,2, igły 3/3.
 - llama.cpp b12649 + moe-cache 3500: c1 29,1, prefill 303/313, 18,8k decode 26,6, igły 3/3.
 - llama.cpp b12676 + moe-cache 3500: c1 28,8, prefill 490/565, 18,8k decode 26,7, igły 3/3.
