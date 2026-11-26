@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>zer0.ngin — Inkling 2 Mini</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --surface-2: #f0f0ec;
+    --border: #dfdfd8;
+    --text: #1c1c1a;
+    --text-muted: #66665f;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+    --user-bg: #eef2ff;
+    --user-border: #d7e0fc;
+    --code-bg: #f1f1ed;
+    --radius: 8px;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  [data-theme="dark"] {
+    --bg: #141413;
+    --surface: #1c1c1a;
+    --surface-2: #242421;
+    --border: #2f2f2b;
+    --text: #ecece8;
+    --text-muted: #98988f;
+    --accent: #3b82f6;
+    --accent-hover: #60a5fa;
+    --danger: #ef4444;
+    --danger-hover: #f87171;
+    --user-bg: #1e2638;
+    --user-border: #2b3854;
+    --code-bg: #111110;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .brand h1 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .model-badge {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  select, input[type="range"], button {
+    font-family: inherit;
+    font-size: 12px;
+  }
+
+  select {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+  }
+
+  input[type="range"] {
+    width: 78px;
+    accent-color: var(--accent);
+  }
+
+  .temp-val {
+    font-family: var(--font-mono);
+    min-width: 26px;
+    text-align: right;
+    color: var(--text);
+  }
+
+  .btn {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+  }
+
+  .btn:hover { background: var(--surface-2); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-danger {
+    background: var(--danger);
+    color: #fff;
+    border-color: var(--danger);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .btn-danger:hover { background: var(--danger-hover); border-color: var(--danger-hover); }
+
+  .metrics-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .metrics-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .empty-state {
+    margin: auto;
+    text-align: center;
+    color: var(--text-muted);
+    max-width: 420px;
+  }
+
+  .empty-state p { margin: 4px 0; }
+
+  .msg {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .msg.user {
+    background: var(--user-bg);
+    border-color: var(--user-border);
+    align-self: flex-end;
+    max-width: 85%;
+  }
+
+  .msg.assistant {
+    align-self: stretch;
+  }
+
+  .msg-role {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+
+  details.reasoning {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface-2);
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  details.reasoning summary {
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    user-select: none;
+  }
+
+  .reasoning-body {
+    margin-top: 8px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    border-top: 1px solid var(--border);
+    padding-top: 6px;
+  }
+
+  .msg-content {
+    word-break: break-word;
+  }
+
+  .msg-content p { margin: 0 0 8px 0; }
+  .msg-content p:last-child { margin-bottom: 0; }
+  .msg-content h1, .msg-content h2, .msg-content h3 {
+    margin: 10px 0 6px 0;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .msg-content h1 { font-size: 1.25em; }
+  .msg-content h2 { font-size: 1.12em; }
+  .msg-content h3 { font-size: 1.02em; }
+  .msg-content ul, .msg-content ol {
+    margin: 4px 0 8px 0;
+    padding-left: 22px;
+  }
+  .msg-content li { margin: 2px 0; }
+
+  .msg-content pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    overflow-x: auto;
+    margin: 8px 0;
+  }
+
+  .msg-content code {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    background: var(--code-bg);
+    padding: 1px 4px;
+    border-radius: 4px;
+  }
+
+  .msg-content pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .tool-calls {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    white-space: pre-wrap;
+  }
+
+  .msg-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
+  }
+
+  .error-banner {
+    color: var(--danger);
+    font-size: 13px;
+  }
+
+  footer.composer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  textarea {
+    flex: 1;
+    resize: none;
+    min-height: 42px;
+    max-height: 180px;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <h1>zer0.ngin</h1>
+      <span id="modelBadge" class="model-badge">ładowanie…</span>
+    </div>
+    <div class="controls">
+      <label class="control-group">
+        <span>Myślenie:</span>
+        <select id="effortSelect" aria-label="Poziom myślenia">
+          <option value="minimal">Minimalny</option>
+          <option value="low">Niski</option>
+          <option value="medium" selected>Średni</option>
+          <option value="high">Wysoki</option>
+        </select>
+      </label>
+      <label class="control-group">
+        <span>Temp.:</span>
+        <input id="tempSlider" type="range" min="0" max="2" step="0.1" value="0.7" aria-label="Temperatura">
+        <span id="tempVal" class="temp-val">0.7</span>
+      </label>
+      <button id="clearBtn" class="btn" type="button">Nowa rozmowa</button>
+      <button id="themeBtn" class="btn" type="button">Motyw</button>
+    </div>
+  </header>
+
+  <div class="metrics-bar">
+    <div class="metrics-items">
+      <span id="liveTps">Generowanie: — tok/s</span>
+      <span id="prefillTps">Prefill: — tok/s</span>
+      <span id="tokenInfo">Tokeny: —</span>
+    </div>
+    <span id="statusText">Gotowy</span>
+  </div>
+
+  <main id="messages" class="messages">
+    <div id="emptyState" class="empty-state">
+      <p><strong>Lokalny czat z Inkling 2 Mini (zer0.ngin)</strong></p>
+      <p>Wpisz wiadomość poniżej. Historia rozmowy jest przechowywana wyłącznie w pamięci karty.</p>
+    </div>
+  </main>
+
+  <footer class="composer">
+    <textarea id="input" rows="1" placeholder="Napisz wiadomość… (Enter wysyła, Shift+Enter nowa linia)"></textarea>
+    <button id="sendBtn" class="btn btn-primary" type="button">Wyślij</button>
+    <button id="stopBtn" class="btn btn-danger" type="button" style="display:none">Zatrzymaj</button>
+  </footer>
+</div>
+
+<script>
+(function() {
+  "use strict";
+
+  const messagesEl = document.getElementById("messages");
+  const emptyStateEl = document.getElementById("emptyState");
+  const inputEl = document.getElementById("input");
+  const sendBtn = document.getElementById("sendBtn");
+  const stopBtn = document.getElementById("stopBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const themeBtn = document.getElementById("themeBtn");
+  const effortSelect = document.getElementById("effortSelect");
+  const tempSlider = document.getElementById("tempSlider");
+  const tempVal = document.getElementById("tempVal");
+  const modelBadge = document.getElementById("modelBadge");
+  const liveTpsEl = document.getElementById("liveTps");
+  const prefillTpsEl = document.getElementById("prefillTps");
+  const tokenInfoEl = document.getElementById("tokenInfo");
+  const statusTextEl = document.getElementById("statusText");
+
+  let conversation = [];
+  let activeModel = "local";
+  let abortController = null;
+  let isGenerating = false;
+
+  // Theme init
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  let currentTheme = prefersDark ? "dark" : "light";
+  function applyTheme(t) {
+    currentTheme = t;
+    document.documentElement.setAttribute("data-theme", t);
+    themeBtn.textContent = t === "dark" ? "Jasny" : "Ciemny";
+  }
+  applyTheme(currentTheme);
+
+  themeBtn.addEventListener("click", () => {
+    applyTheme(currentTheme === "dark" ? "light" : "dark");
+  });
+
+  tempSlider.addEventListener("input", () => {
+    tempVal.textContent = Number(tempSlider.value).toFixed(1);
+  });
+
+  // Load model name
+  fetch("/v1/models")
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (data && Array.isArray(data.data) && data.data.length > 0 && data.data[0].id) {
+        activeModel = data.data[0].id;
+        modelBadge.textContent = activeModel;
+      } else {
+        modelBadge.textContent = "lokalny";
+      }
+    })
+    .catch(() => {
+      modelBadge.textContent = "offline";
+    });
+
+  // Safe Markdown renderer: ALWAYS escapes HTML first
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function renderInline(escaped) {
+    const codeSlots = [];
+    let s = escaped.replace(/`([^`\n]+)`/g, (_, code) => {
+      const idx = codeSlots.length;
+      codeSlots.push("<code>" + code + "</code>");
+      return "\u0000IC" + idx + "\u0000";
+    });
+    s = s.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
+    s = s.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>");
+    s = s.replace(/\u0000IC(\d+)\u0000/g, (_, i) => codeSlots[Number(i)]);
+    return s;
+  }
+
+  function renderMarkdown(raw) {
+    if (!raw) return "";
+    const escaped = escapeHtml(raw.replace(/\r\n/g, "\n"));
+
+    // Extract fenced code blocks first
+    const codeBlocks = [];
+    const withPlaceholders = escaped.replace(/```[^\n]*\n([\s\S]*?)```/g, (_, code) => {
+      const idx = codeBlocks.length;
+      codeBlocks.push("<pre><code>" + code.replace(/\n$/, "") + "</code></pre>");
+      return "\n\u0000CB" + idx + "\u0000\n";
+    });
+
+    const lines = withPlaceholders.split("\n");
+    const out = [];
+    let inUl = false;
+    let inOl = false;
+    let para = [];
+
+    function flushPara() {
+      if (para.length > 0) {
+        out.push("<p>" + para.map(renderInline).join("<br>") + "</p>");
+        para = [];
+      }
+    }
+    function closeLists() {
+      if (inUl) { out.push("</ul>"); inUl = false; }
+      if (inOl) { out.push("</ol>"); inOl = false; }
+    }
+
+    for (const line of lines) {
+      const cbMatch = line.match(/^\u0000CB(\d+)\u0000$/);
+      if (cbMatch) {
+        flushPara();
+        closeLists();
+        out.push(codeBlocks[Number(cbMatch[1])]);
+        continue;
+      }
+
+      if (line.trim() === "") {
+        flushPara();
+        closeLists();
+        continue;
+      }
+
+      const hMatch = line.match(/^(#{1,3})\s+(.*)$/);
+      if (hMatch) {
+        flushPara();
+        closeLists();
+        const level = hMatch[1].length;
+        out.push("<h" + level + ">" + renderInline(hMatch[2]) + "</h" + level + ">");
+        continue;
+      }
+
+      const ulMatch = line.match(/^\s*[-*]\s+(.*)$/);
+      if (ulMatch) {
+        flushPara();
+        if (inOl) { out.push("</ol>"); inOl = false; }
+        if (!inUl) { out.push("<ul>"); inUl = true; }
+        out.push("<li>" + renderInline(ulMatch[1]) + "</li>");
+        continue;
+      }
+
+      const olMatch = line.match(/^\s*\d+\.\s+(.*)$/);
+      if (olMatch) {
+        flushPara();
+        if (inUl) { out.push("</ul>"); inUl = false; }
+        if (!inOl) { out.push("<ol>"); inOl = true; }
+        out.push("<li>" + renderInline(olMatch[1]) + "</li>");
+        continue;
+      }
+
+      closeLists();
+      para.push(line);
+    }
+
+    flushPara();
+    closeLists();
+    return out.join("");
+  }
+
+  function autoResize() {
+    inputEl.style.height = "auto";
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 180) + "px";
+  }
+  inputEl.addEventListener("input", autoResize);
+
+  function setBusy(busy) {
+    isGenerating = busy;
+    sendBtn.style.display = busy ? "none" : "";
+    stopBtn.style.display = busy ? "" : "none";
+    inputEl.disabled = busy;
+    statusTextEl.textContent = busy ? "Generowanie…" : "Gotowy";
+  }
+
+  function scrollBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function appendUserBubble(text) {
+    if (emptyStateEl) emptyStateEl.style.display = "none";
+    const el = document.createElement("div");
+    el.className = "msg user";
+    const role = document.createElement("div");
+    role.className = "msg-role";
+    role.textContent = "Ty";
+    const body = document.createElement("div");
+    body.className = "msg-content";
+    body.innerHTML = renderMarkdown(text);
+    el.appendChild(role);
+    el.appendChild(body);
+    messagesEl.appendChild(el);
+    scrollBottom();
+  }
+
+  function createAssistantBubble() {
+    if (emptyStateEl) emptyStateEl.style.display = "none";
+    const el = document.createElement("div");
+    el.className = "msg assistant";
+
+    const role = document.createElement("div");
+    role.className = "msg-role";
+    role.textContent = "Asystent";
+    el.appendChild(role);
+
+    const details = document.createElement("details");
+    details.className = "reasoning";
+    details.style.display = "none";
+    const summary = document.createElement("summary");
+    summary.textContent = "Rozumowanie";
+    const reasoningBody = document.createElement("div");
+    reasoningBody.className = "reasoning-body";
+    details.appendChild(summary);
+    details.appendChild(reasoningBody);
+    el.appendChild(details);
+
+    const content = document.createElement("div");
+    content.className = "msg-content";
+    el.appendChild(content);
+
+    const toolsEl = document.createElement("div");
+    toolsEl.className = "tool-calls";
+    toolsEl.style.display = "none";
+    el.appendChild(toolsEl);
+
+    const meta = document.createElement("div");
+    meta.className = "msg-meta";
+    meta.style.display = "none";
+    el.appendChild(meta);
+
+    messagesEl.appendChild(el);
+    scrollBottom();
+    return { el, details, summary, reasoningBody, content, toolsEl, meta };
+  }
+
+  async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text || isGenerating) return;
+
+    inputEl.value = "";
+    autoResize();
+
+    conversation.push({ role: "user", content: text });
+    appendUserBubble(text);
+
+    const bubble = createAssistantBubble();
+    setBusy(true);
+
+    abortController = new AbortController();
+    let accReasoning = "";
+    let accContent = "";
+    let accTools = [];
+    let chunkCount = 0;
+    let firstTokenAt = 0;
+    let lastTimings = null;
+    let lastUsage = null;
+
+    const reqMessages = conversation.map(m => {
+      const obj = { role: m.role, content: m.content };
+      if (m.reasoning_content) obj.reasoning_content = m.reasoning_content;
+      return obj;
+    });
+
+    try {
+      const resp = await fetch("/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: abortController.signal,
+        body: JSON.stringify({
+          model: activeModel,
+          messages: reqMessages,
+          stream: true,
+          stream_options: { include_usage: true },
+          reasoning_effort: effortSelect.value,
+          temperature: Number(tempSlider.value),
+          cache_prompt: true
+        })
+      });
+
+      if (!resp.ok) {
+        let errMsg = "Błąd HTTP " + resp.status;
+        try {
+          const errJson = await resp.json();
+          if (errJson && errJson.error && errJson.error.message) {
+            errMsg = errJson.error.message;
+          }
+        } catch (_) {}
+        bubble.content.innerHTML = '<div class="error-banner">' + escapeHtml(errMsg) + "</div>";
+        conversation.pop();
+        return;
+      }
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let sseBuf = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        sseBuf += decoder.decode(value, { stream: true });
+
+        let nlIdx;
+        while ((nlIdx = sseBuf.indexOf("\n")) !== -1) {
+          const line = sseBuf.slice(0, nlIdx).replace(/\r$/, "");
+          sseBuf = sseBuf.slice(nlIdx + 1);
+          if (!line.startsWith("data:")) continue;
+          const payload = line.slice(5).trim();
+          if (payload === "[DONE]") continue;
+          if (!payload) continue;
+
+          let parsed;
+          try { parsed = JSON.parse(payload); } catch (_) { continue; }
+
+          if (parsed.usage) lastUsage = parsed.usage;
+          if (parsed.timings) lastTimings = parsed.timings;
+
+          const choice = parsed.choices && parsed.choices[0];
+          const delta = choice && choice.delta;
+          if (delta) {
+            let gotToken = false;
+            if (typeof delta.reasoning_content === "string" && delta.reasoning_content.length > 0) {
+              accReasoning += delta.reasoning_content;
+              bubble.details.style.display = "";
+              bubble.summary.textContent = "Rozumowanie (w trakcie…)";
+              bubble.reasoningBody.textContent = accReasoning;
+              gotToken = true;
+            }
+            if (typeof delta.content === "string" && delta.content.length > 0) {
+              if (accReasoning && bubble.summary.textContent !== "Rozumowanie") {
+                bubble.summary.textContent = "Rozumowanie";
+              }
+              accContent += delta.content;
+              bubble.content.innerHTML = renderMarkdown(accContent);
+              gotToken = true;
+            }
+            if (Array.isArray(delta.tool_calls) && delta.tool_calls.length > 0) {
+              for (const tc of delta.tool_calls) {
+                accTools.push(tc);
+              }
+              bubble.toolsEl.style.display = "";
+              bubble.toolsEl.textContent = accTools.map(t =>
+                (t.function && t.function.name ? t.function.name : "narzędzie") +
+                "(" + (t.function && t.function.arguments ? t.function.arguments : "{}") + ")"
+              ).join("\n");
+              gotToken = true;
+            }
+
+            if (gotToken) {
+              chunkCount += 1;
+              const now = performance.now();
+              if (!firstTokenAt) firstTokenAt = now;
+              const elapsedS = (now - firstTokenAt) / 1000;
+              if (elapsedS > 0.05) {
+                liveTpsEl.textContent = "Generowanie: " + (chunkCount / elapsedS).toFixed(1) + " tok/s";
+              }
+              scrollBottom();
+            }
+          }
+        }
+      }
+
+      if (accReasoning) {
+        bubble.summary.textContent = "Rozumowanie";
+      }
+
+      if (lastTimings) {
+        const genTps = Number(lastTimings.predicted_per_second || 0);
+        const preTps = Number(lastTimings.prompt_per_second || 0);
+        liveTpsEl.textContent = "Generowanie: " + genTps.toFixed(1) + " tok/s";
+        prefillTpsEl.textContent = "Prefill: " + preTps.toFixed(1) + " tok/s";
+        const pTok = lastUsage ? lastUsage.prompt_tokens : (lastTimings.prompt_n + (lastTimings.cache_n || 0));
+        const cTok = lastUsage ? lastUsage.completion_tokens : lastTimings.predicted_n;
+        const cached = lastUsage && lastUsage.prompt_tokens_details ? lastUsage.prompt_tokens_details.cached_tokens : (lastTimings.cache_n || 0);
+        tokenInfoEl.textContent = "Tokeny: " + pTok + " + " + cTok + (cached ? " (cache: " + cached + ")" : "");
+        bubble.meta.style.display = "";
+        bubble.meta.textContent =
+          "Prefill: " + preTps.toFixed(1) + " tok/s · Generowanie: " + genTps.toFixed(1) +
+          " tok/s · Tokeny: " + pTok + " + " + cTok;
+      }
+
+      const assistantMsg = { role: "assistant", content: accContent };
+      if (accReasoning) assistantMsg.reasoning_content = accReasoning;
+      conversation.push(assistantMsg);
+    } catch (err) {
+      if (err && err.name === "AbortError") {
+        statusTextEl.textContent = "Zatrzymano";
+        if (accContent || accReasoning) {
+          if (accReasoning) bubble.summary.textContent = "Rozumowanie (przerwano)";
+          const assistantMsg = { role: "assistant", content: accContent };
+          if (accReasoning) assistantMsg.reasoning_content = accReasoning;
+          conversation.push(assistantMsg);
+        }
+      } else {
+        bubble.content.innerHTML = '<div class="error-banner">Błąd połączenia: ' + escapeHtml(String(err)) + "</div>";
+        conversation.pop();
+      }
+    } finally {
+      abortController = null;
+      setBusy(false);
+      inputEl.focus();
+    }
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  stopBtn.addEventListener("click", () => {
+    if (abortController) abortController.abort();
+  });
+
+  clearBtn.addEventListener("click", () => {
+    if (abortController) abortController.abort();
+    conversation = [];
+    messagesEl.innerHTML = "";
+    messagesEl.appendChild(emptyStateEl);
+    emptyStateEl.style.display = "";
+    liveTpsEl.textContent = "Generowanie: — tok/s";
+    prefillTpsEl.textContent = "Prefill: — tok/s";
+    tokenInfoEl.textContent = "Tokeny: —";
+    statusTextEl.textContent = "Gotowy";
+    inputEl.focus();
+  });
+
+  inputEl.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+})();
+</script>
+</body>
+</html>
