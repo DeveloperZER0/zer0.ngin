@@ -1,0 +1,8 @@
+# Build output, NVIDIA DLLs (proprietary, not redistributed here), compiled cubins, runtime profile
+bin/
+zig-out/
+.zig-cache/
+# Raw run logs with local paths
+bench/logs/
+__pycache__/
+*.pdb
