@@ -1,0 +1,14 @@
+{
+ "name": "ink@D",
+ "base_url": "http://127.0.0.1:18081",
+ "model": "inkling-2-mini",
+ "concurrency": 1,
+ "prefill_lengths": [
+  4096
+ ],
+ "temperature": 0.6,
+ "extra_body": {
+  "reasoning_effort": "low",
+  "seed": 1
+ }
+}

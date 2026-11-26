@@ -1,0 +1,16 @@
+{
+ "name": "ctl-nomm",
+ "base_url": "http://127.0.0.1:18081",
+ "model": "inkling-2-mini",
+ "concurrency": 1,
+ "prefill_lengths": [
+  512,
+  4096,
+  16384
+ ],
+ "temperature": 0.6,
+ "extra_body": {
+  "reasoning_effort": "low",
+  "seed": 1
+ }
+}

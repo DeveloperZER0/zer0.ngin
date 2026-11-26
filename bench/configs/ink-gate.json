@@ -1,0 +1,1 @@
+{"name":"ink-gate-26","base_url":"http://127.0.0.1:18090","model":"inkling-2-mini","concurrency":1,"prefill_lengths":[],"temperature":0.6,"extra_body":{"reasoning_effort":"low","seed":1}}
